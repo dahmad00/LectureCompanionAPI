@@ -28,19 +28,39 @@ namespace LectureCompanion.Api.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
         {
-            var user = new AppUser
+            try
             {
-                UserName = request.Email,
-                Email = request.Email,
-                FullName = request.FullName
-            };
+                var user = new AppUser
+                {
+                    UserName = request.Email,
+                    Email = request.Email,
+                    FullName = request.FullName
+                };
 
-            var result = await _userManager.CreateAsync(user, request.Password);
-            if (result.Succeeded)
-                return Ok("User created");
+                var result = await _userManager.CreateAsync(user, request.Password);
 
-            return BadRequest(result.Errors);
+                if (result.Succeeded)
+                {
+                    Console.WriteLine("[DEBUG] User created successfully.");
+                    return Ok("User created");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine($"[ERROR] {error.Code} - {error.Description}");
+                }
+
+                return BadRequest(result.Errors);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("[EXCEPTION] " + ex.Message);
+                Console.WriteLine(ex.StackTrace); // 👈 log the full stack trace
+
+                return StatusCode(500, "Internal Server Error: " + ex.Message);
+            }
         }
+
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)

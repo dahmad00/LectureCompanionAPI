@@ -42,4 +42,11 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// 👇 Log EF Core provider at startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    Console.WriteLine($"EF Core Provider: {db.Database.ProviderName}");
+}
 app.Run();
